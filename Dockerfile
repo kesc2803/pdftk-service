@@ -24,6 +24,12 @@ RUN echo "=== Alle kopierten Dateien ===" && \
 RUN echo "=== Maven Build ===" && \
     mvn clean compile package -DskipTests -X
 
+# Debug: Was wurde kompiliert?
+RUN echo "=== target/classes ===" && \
+    ls -la target/classes/ || echo "target/classes nicht gefunden" && \
+    echo "=== target/classes/com/pdfservice ===" && \
+    ls -la target/classes/com/pdfservice/ || echo "target/classes/com/pdfservice nicht gefunden"
+
 # Debug: JAR Inhalt überprüfen
 RUN echo "=== JAR Inhalt ===" && \
     ls -la target/ && \
