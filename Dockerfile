@@ -12,8 +12,13 @@ WORKDIR /app
 # Alle Dateien kopieren
 COPY . .
 
-# Maven Build mit system Maven (nicht wrapper)
-RUN mvn clean compile package -DskipTests
+# Debug: Source Files überprüfen
+RUN echo "=== Source Files ===" && \
+    find src -name "*.java" && \
+    echo "=== Maven Source Directory ===" && \
+    ls -la src/main/java/com/pdfservice/ && \
+    echo "=== Maven Build ===" && \
+    mvn clean compile package -DskipTests -X
 
 # Debug: JAR Inhalt überprüfen
 RUN echo "=== JAR Inhalt ===" && \
