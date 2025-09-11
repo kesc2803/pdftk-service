@@ -14,7 +14,9 @@ COPY . .
 # Maven Wrapper ausführbar machen und JAR herunterladen
 RUN chmod +x ./mvnw && \
     mkdir -p .mvn/wrapper && \
-    curl -o .mvn/wrapper/maven-wrapper.jar https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar
+    curl -o .mvn/wrapper/maven-wrapper.jar https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar && \
+    echo "distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip" > .mvn/wrapper/maven-wrapper.properties && \
+    echo "wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar" >> .mvn/wrapper/maven-wrapper.properties
 
 # Anwendung kompilieren
 RUN ./mvnw clean package -DskipTests
