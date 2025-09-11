@@ -12,13 +12,13 @@ WORKDIR /app
 # Alle Dateien kopieren
 COPY . .
 
-# Debug: Source Files überprüfen
-RUN echo "=== Source Files ===" && \
-    find src -name "*.java" && \
+# Debug: Was wurde kopiert?
+RUN echo "=== Alle kopierten Dateien ===" && \
+    ls -la && \
+    echo "=== src Directory ===" && \
+    ls -la src/ || echo "src Directory nicht gefunden" && \
     echo "=== Maven Source Directory ===" && \
-    ls -la src/main/java/com/pdfservice/ && \
-    echo "=== Maven Build ===" && \
-    mvn clean compile package -DskipTests -X
+    ls -la src/main/java/com/pdfservice/ || echo "Maven Source Directory nicht gefunden"
 
 # Debug: JAR Inhalt überprüfen
 RUN echo "=== JAR Inhalt ===" && \
