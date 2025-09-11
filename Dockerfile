@@ -18,8 +18,14 @@ RUN chmod +x ./mvnw && \
     echo "distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip" > .mvn/wrapper/maven-wrapper.properties && \
     echo "wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar" >> .mvn/wrapper/maven-wrapper.properties
 
-# Anwendung kompilieren (explizit compile + package)
-RUN ./mvnw clean compile package -DskipTests
+# Debug: Überprüfe Source Verzeichnis
+RUN echo "=== Source Verzeichnis ===" && \
+    ls -la src/ && \
+    echo "=== Java Source Files ===" && \
+    find src -name "*.java" || echo "Keine .java Dateien gefunden"
+
+# Anwendung kompilieren (mit Debug Output)
+RUN ./mvnw clean compile package -DskipTests -X
 
 # Debug: Überprüfe ob Java Klassen kompiliert wurden
 RUN echo "=== Target Verzeichnis ===" && \
