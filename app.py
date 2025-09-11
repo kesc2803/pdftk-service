@@ -103,10 +103,16 @@ def convert_html_to_pdf(html_content):
     """
     try:
         # Verwende den bestehenden HTML2PDF Service
+        api_key = os.environ.get('PDF_API_KEY', '')
+        headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': api_key
+        }
+        
         response = requests.post(
             'https://html2pdf-q4n2.onrender.com/generate',
             json={'html': html_content},
-            headers={'Content-Type': 'application/json'},
+            headers=headers,
             timeout=30
         )
         
