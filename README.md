@@ -1,89 +1,16 @@
-# PDFtk Service README
+# meinmakleroffice
 
-## Übersicht
-Dieser Service bietet PDF-Manipulation mit PDFtk und Unterschriftenfeldern über eine REST API.
+A new Flutter project.
 
-## Features
-- ✅ PDFtk Integration für echte Unterschriftenfelder
-- ✅ HTML zu PDF Konvertierung mit wkhtmltopdf
-- ✅ Unterschriftenfelder zu bestehenden PDFs hinzufügen
-- ✅ Docker Container für einfache Deployment
-- ✅ Health Checks und Error Handling
+## Getting Started
 
-## API Endpoints
+This project is a starting point for a Flutter application.
 
-### Health Check
-```
-GET /health
-```
+A few resources to get you started if this is your first Flutter project:
 
-### PDFtk Verfügbarkeit prüfen
-```
-GET /check-pdftk
-```
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-### Unterschriftenfeld zu PDF hinzufügen
-```
-POST /add-signature-field
-Content-Type: multipart/form-data
-
-Body:
-- pdf: PDF-Datei (multipart/form-data)
-- customerName: Kundenname (optional)
-- signatureX: X-Position (default: 400)
-- signatureY: Y-Position (default: 50)
-- signatureWidth: Breite (default: 100)
-- signatureHeight: Höhe (default: 50)
-```
-
-### PDF aus HTML mit Unterschriftenfeld erstellen
-```
-POST /create-pdf-with-signature
-Content-Type: application/json
-
-Body:
-{
-  "html": "<html>...</html>",
-  "customerName": "Max Mustermann",
-  "signatureX": 400,
-  "signatureY": 50,
-  "signatureWidth": 100,
-  "signatureHeight": 50
-}
-```
-
-## Lokale Entwicklung
-
-### Voraussetzungen
-- Node.js 18+
-- PDFtk installiert
-- wkhtmltopdf installiert
-
-### Installation
-```bash
-npm install
-npm run dev
-```
-
-## Docker Deployment
-
-### Lokal testen
-```bash
-docker build -t pdftk-service .
-docker run -p 3000:3000 pdftk-service
-```
-
-### Render.com Deployment
-1. Repository zu GitHub pushen
-2. Render.com Service erstellen
-3. Dockerfile als Build Command verwenden
-4. Port 3000 freigeben
-
-## Umgebungsvariablen
-- `PORT`: Server Port (default: 3000)
-- `NODE_ENV`: Environment (development/production)
-
-## Fehlerbehandlung
-- Automatische Cleanup von temporären Dateien
-- Detaillierte Error Messages
-- Health Checks für Monitoring
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
