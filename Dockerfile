@@ -8,18 +8,8 @@ RUN apt-get update && apt-get install -y \
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
 
-# Maven Wrapper kopieren
-COPY mvnw .
-COPY .mvn .mvn
-
-# Pom.xml kopieren
-COPY pom.xml .
-
-# Dependencies herunterladen
-RUN ./mvnw dependency:go-offline
-
-# Quellcode kopieren
-COPY src src
+# Alle Dateien kopieren
+COPY . .
 
 # Anwendung kompilieren
 RUN ./mvnw clean package -DskipTests
