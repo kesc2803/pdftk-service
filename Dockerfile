@@ -1,29 +1,35 @@
-# Python PDF Service Dockerfile
+FROM openjdk:17-jdk-slim
 
-FROM python:3.11-slim
-
-# System Dependencies installieren (minimal)
+# System Dependencies installieren
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    && apt-get clean \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
 
-# Python Dependencies installieren
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Maven Wrapper kopieren
+COPY mvnw .
+COPY .mvn .mvn
 
-# Anwendung kopieren
-COPY . .
+# Pom.xml kopieren
+COPY pom.xml .
+
+# Dependencies herunterladen
+RUN ./mvnw dependency:go-offline
+
+# Quellcode kopieren
+COPY src src
+
+# Anwendung kompilieren
+RUN ./mvnw clean package -DskipTests
 
 # Port freigeben
-EXPOSE 3000
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:3000/health')"
+  CMD curl -f http://localhost:8080/health || exit 1
 
 # Anwendung starten
-CMD ["gunicorn", "--bind", "0.0.0.0:3000", "--workers", "2", "app:app"]
+CMD ["java", "-jar", "target/pdf-service-1.0.0.jar"]
