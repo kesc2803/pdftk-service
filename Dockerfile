@@ -11,6 +11,9 @@ WORKDIR /app
 # Alle Dateien kopieren
 COPY . .
 
+# Maven Wrapper ausführbar machen
+RUN chmod +x ./mvnw
+
 # Anwendung kompilieren
 RUN ./mvnw clean package -DskipTests
 
