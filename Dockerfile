@@ -1,16 +1,15 @@
 # PDFtk Service Dockerfile
 
-FROM node:18-alpine
+FROM node:18-slim
 
-# PDFtk und wkhtmltopdf installieren
-RUN apk add --no-cache \
+# System Dependencies installieren
+RUN apt-get update && apt-get install -y \
     pdftk \
     wkhtmltopdf \
     fontconfig \
-    freetype \
-    ttf-dejavu \
-    ttf-liberation \
-    && rm -rf /var/cache/apk/*
+    fonts-dejavu-core \
+    fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
 
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
