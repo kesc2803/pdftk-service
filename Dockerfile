@@ -1,22 +1,23 @@
-# PDFtk Service Dockerfile
+# Python PDF Service Dockerfile
 
-FROM node:18-slim
+FROM python:3.11-slim
 
 # System Dependencies installieren
 RUN apt-get update && apt-get install -y \
-    pdftk \
-    wkhtmltopdf \
-    fontconfig \
-    fonts-dejavu-core \
-    fonts-liberation \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libgdk-pixbuf2.0-dev \
+    libffi-dev \
+    shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
 
-# Package.json kopieren und Dependencies installieren
-COPY package.json ./
-RUN npm install --only=production
+# Python Dependencies installieren
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Anwendung kopieren
 COPY . .
@@ -26,7 +27,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD python -c "import requests; requests.get('http://localhost:3000/health')"
 
 # Anwendung starten
-CMD ["node", "server.js"]
+CMD ["gunicorn", "--bind", "0.0.0.0:3000", "--workers", "2", "app:app"]
