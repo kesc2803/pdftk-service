@@ -163,7 +163,6 @@ app.post('/create-pdf-with-signature', async (req, res) => {
     const htmlPath = path.join(tempDir, `input_${timestamp}.html`);
     const pdfPath = path.join(tempDir, `intermediate_${timestamp}.pdf`);
     const outputPath = path.join(tempDir, `output_${timestamp}.pdf`);
-    const fdfPath = path.join(tempDir, `form_${timestamp}.fdf`);
 
     try {
       // HTML-Datei speichern
@@ -175,58 +174,17 @@ app.post('/create-pdf-with-signature', async (req, res) => {
       
       await execAsync(wkhtmlCommand);
 
-      // FDF-Datei für Unterschriftenfeld erstellen
-      const fdfContent = `%FDF-1.2
-1 0 obj
-<<
-/FDF
-<<
-/Fields
-[
-<<
-/T (signature)
-/Rect [${signatureX} ${signatureY} ${parseInt(signatureX) + parseInt(signatureWidth)} ${parseInt(signatureY) + parseInt(signatureHeight)}]
-/FT /Sig
-/Ff 1
->>
-<<
-/T (customerName)
-/Rect [${signatureX} ${parseInt(signatureY) - 30} ${parseInt(signatureX) + parseInt(signatureWidth)} ${parseInt(signatureY) - 10}]
-/V (${customerName || 'Kunde'})
-/FT /Tx
-/Ff 1
->>
-]
->>
->>
-endobj
-trailer
-<<
-/Root 1 0 R
->>
-%%EOF`;
-
-      await fs.writeFile(fdfPath, fdfContent);
-
-      // PDFtk ausführen
-      const pdftkCommand = `pdftk "${pdfPath}" fill_form "${fdfPath}" output "${outputPath}" flatten`;
-      console.log('Executing PDFtk command:', pdftkCommand);
+      // Da wkhtmltopdf kein AcroForm erstellt, verwenden wir einen einfacheren Ansatz:
+      // Wir geben das PDF zurück mit einem visuellen Unterschriftenfeld im HTML
+      console.log('PDF erfolgreich erstellt, aber ohne AcroForm - verwende visuelles Unterschriftenfeld');
       
-      const { stdout, stderr } = await execAsync(pdftkCommand);
-      
-      if (stderr && !stderr.includes('Success')) {
-        console.warn('PDFtk warning:', stderr);
-      }
-
       // Ergebnis lesen
-      const resultPdf = await fs.readFile(outputPath);
+      const resultPdf = await fs.readFile(pdfPath);
 
       // Temporäre Dateien löschen
       await Promise.all([
         fs.unlink(htmlPath).catch(() => {}),
-        fs.unlink(pdfPath).catch(() => {}),
-        fs.unlink(outputPath).catch(() => {}),
-        fs.unlink(fdfPath).catch(() => {})
+        fs.unlink(pdfPath).catch(() => {})
       ]);
 
       // PDF als Response senden
