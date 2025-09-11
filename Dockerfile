@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Package.json kopieren und Dependencies installieren
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package.json ./
+RUN npm install --only=production
 
 # Anwendung kopieren
 COPY . .
