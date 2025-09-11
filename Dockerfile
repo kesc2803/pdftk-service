@@ -11,8 +11,10 @@ WORKDIR /app
 # Alle Dateien kopieren
 COPY . .
 
-# Maven Wrapper ausführbar machen
-RUN chmod +x ./mvnw
+# Maven Wrapper ausführbar machen und JAR herunterladen
+RUN chmod +x ./mvnw && \
+    mkdir -p .mvn/wrapper && \
+    curl -o .mvn/wrapper/maven-wrapper.jar https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar
 
 # Anwendung kompilieren
 RUN ./mvnw clean package -DskipTests
