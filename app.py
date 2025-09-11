@@ -4,7 +4,6 @@ import tempfile
 import os
 import io
 from datetime import datetime
-from weasyprint import HTML, CSS
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfform
@@ -12,6 +11,7 @@ from reportlab.lib.colors import black
 import PyPDF2
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+import requests
 import logging
 
 app = Flask(__name__)
@@ -33,14 +33,12 @@ def health_check():
 def check_pdf_libs():
     try:
         # Prüfe ob alle Bibliotheken verfügbar sind
-        import weasyprint
         import PyPDF2
         import reportlab
         
         return jsonify({
             'available': True,
             'libraries': {
-                'weasyprint': weasyprint.__version__,
                 'PyPDF2': PyPDF2.__version__,
                 'reportlab': reportlab.Version
             },
@@ -69,11 +67,8 @@ def create_pdf_with_signature():
         
         logger.info(f'Erstelle PDF mit Unterschriftenfeld für {customer_name}')
         
-        # Schritt 1: HTML zu PDF konvertieren mit weasyprint
-        html_doc = HTML(string=html_content)
-        pdf_buffer = io.BytesIO()
-        html_doc.write_pdf(pdf_buffer)
-        pdf_buffer.seek(0)
+        # Schritt 1: HTML zu PDF konvertieren mit externem Service
+        pdf_buffer = convert_html_to_pdf(html_content)
         
         # Schritt 2: AcroForm mit Unterschriftenfeld erstellen
         acroform_pdf = create_acroform_with_signature(
@@ -101,6 +96,31 @@ def create_pdf_with_signature():
             'error': 'Fehler bei der PDF-Erstellung',
             'details': str(error)
         }), 500
+
+def convert_html_to_pdf(html_content):
+    """
+    Konvertiert HTML zu PDF mit externem Service
+    """
+    try:
+        # Verwende den bestehenden HTML2PDF Service
+        response = requests.post(
+            'https://html2pdf-q4n2.onrender.com/generate',
+            json={'html': html_content},
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            pdf_buffer = io.BytesIO(response.content)
+            pdf_buffer.seek(0)
+            logger.info('HTML erfolgreich zu PDF konvertiert')
+            return pdf_buffer
+        else:
+            raise Exception(f'HTML2PDF Service Fehler: {response.status_code}')
+            
+    except Exception as error:
+        logger.error(f'Fehler bei HTML zu PDF Konvertierung: {str(error)}')
+        raise error
 
 def create_acroform_with_signature(pdf_buffer, customer_name, x, y, width, height):
     """
