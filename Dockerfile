@@ -15,6 +15,12 @@ COPY . .
 # Maven Build mit system Maven (nicht wrapper)
 RUN mvn clean compile package -DskipTests
 
+# Debug: JAR Inhalt überprüfen
+RUN echo "=== JAR Inhalt ===" && \
+    jar -tf target/pdf-service-1.0.0.jar | head -20 && \
+    echo "=== BOOT-INF/classes ===" && \
+    jar -tf target/pdf-service-1.0.0.jar | grep "BOOT-INF/classes" | head -10 || echo "Keine BOOT-INF/classes gefunden"
+
 # Port freigeben
 EXPOSE 8080
 
@@ -22,5 +28,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Anwendung starten
-CMD ["java", "-jar", "target/pdf-service-1.0.0.jar"]
+# Anwendung starten (mit expliziter Main Class)
+CMD ["java", "-cp", "target/pdf-service-1.0.0.jar", "com.pdfservice.PdfServiceApplication"]
