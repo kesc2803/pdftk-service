@@ -21,6 +21,13 @@ RUN chmod +x ./mvnw && \
 # Anwendung kompilieren
 RUN ./mvnw clean package -DskipTests
 
+# Debug: JAR Inhalt überprüfen
+RUN echo "=== JAR Inhalt ===" && \
+    jar -tf target/pdf-service-1.0.0.jar | grep -i pdfservice || echo "Keine PdfService Klassen gefunden" && \
+    echo "=== MANIFEST ===" && \
+    jar -xf target/pdf-service-1.0.0.jar META-INF/MANIFEST.MF && \
+    cat META-INF/MANIFEST.MF || echo "Kein Manifest gefunden"
+
 # Port freigeben
 EXPOSE 8080
 
