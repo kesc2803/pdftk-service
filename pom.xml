@@ -48,9 +48,8 @@
         <!-- iText 7 Core -->
         <dependency>
             <groupId>com.itextpdf</groupId>
-            <artifactId>itext7-core</artifactId>
+            <artifactId>kernel</artifactId>
             <version>8.0.2</version>
-            <type>pom</type>
         </dependency>
 
         <!-- iText 7 PDF Forms -->
@@ -64,7 +63,7 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>html2pdf</artifactId>
-            <version>8.0.2</version>
+            <version>5.0.4</version>
         </dependency>
 
         <!-- Jackson for JSON -->
