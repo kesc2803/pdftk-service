@@ -20,8 +20,13 @@ RUN echo "=== Alle kopierten Dateien ===" && \
     echo "=== Maven Source Directory ===" && \
     ls -la src/main/java/com/pdfservice/ || echo "Maven Source Directory nicht gefunden"
 
+# Maven Build mit Debug
+RUN echo "=== Maven Build ===" && \
+    mvn clean compile package -DskipTests -X
+
 # Debug: JAR Inhalt überprüfen
 RUN echo "=== JAR Inhalt ===" && \
+    ls -la target/ && \
     jar -tf target/pdf-service-1.0.0.jar | head -20 && \
     echo "=== BOOT-INF/classes ===" && \
     jar -tf target/pdf-service-1.0.0.jar | grep "BOOT-INF/classes" | head -10 || echo "Keine BOOT-INF/classes gefunden"
