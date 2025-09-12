@@ -1,8 +1,8 @@
 module pdf-service
 
-go 1.21
+go 1.23
 
 require (
-	github.com/unidoc/unipdf/v3 v3.55.0
+	github.com/unidoc/unipdf/v4 v4.3.0
 	github.com/gin-gonic/gin v1.9.1
 )
