@@ -12,6 +12,7 @@ import (
 	"github.com/unidoc/unipdf/v4/common/license"
 	"github.com/unidoc/unipdf/v4/model"
 	"github.com/unidoc/unipdf/v4/core"
+	"github.com/unidoc/unipdf/v4/model/optimize"
 )
 
 type CreatePdfRequest struct {
@@ -111,32 +112,13 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 		return nil, fmt.Errorf("PDF konnte nicht geöffnet werden: %v", err)
 	}
 
-	// Schritt 3: Neues PDF-Dokument erstellen
-	doc := model.NewPdfDocument()
-	
-	// Schritt 4: Seiten vom Reader zum neuen Dokument kopieren
-	numPages, err := reader.GetNumPages()
+	// Schritt 3: PdfAppender erstellen
+	appender, err := model.NewPdfAppender(reader)
 	if err != nil {
-		return nil, fmt.Errorf("Seitenanzahl konnte nicht ermittelt werden: %v", err)
+		return nil, fmt.Errorf("PdfAppender konnte nicht erstellt werden: %v", err)
 	}
 
-	for i := 1; i <= numPages; i++ {
-		page, err := reader.GetPage(i)
-		if err != nil {
-			return nil, fmt.Errorf("Seite %d konnte nicht gelesen werden: %v", i, err)
-		}
-		err = doc.AddPage(page)
-		if err != nil {
-			return nil, fmt.Errorf("Seite %d konnte nicht hinzugefügt werden: %v", i, err)
-		}
-	}
-
-	// Schritt 5: AcroForm erstellen
-	acroForm := model.NewPdfAcroForm()
-	acroForm.NeedAppearances = core.MakeBool(true)
-	doc.SetAcroForm(acroForm)
-
-	// Schritt 6: Signature Field erstellen
+	// Schritt 4: Signature Field erstellen
 	signatureField := model.NewPdfFieldSignature(nil)
 	
 	// Position und Größe setzen
@@ -150,15 +132,15 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 	// Field Name setzen
 	signatureField.T = core.MakeString("signature_" + req.CustomerName)
 
-	// Signature Field zur AcroForm hinzufügen
-	if acroForm.Fields == nil {
-		acroForm.Fields = &[]*model.PdfField{}
+	// Schritt 5: Signature Field zur ersten Seite hinzufügen
+	err = appender.AddField(signatureField, 1)
+	if err != nil {
+		return nil, fmt.Errorf("Signature Field konnte nicht hinzugefügt werden: %v", err)
 	}
-	*acroForm.Fields = append(*acroForm.Fields, signatureField.PdfField)
 
-	// Schritt 7: PDF speichern
+	// Schritt 6: PDF speichern
 	var buf bytes.Buffer
-	err = doc.Write(&buf)
+	err = appender.Write(&buf)
 	if err != nil {
 		return nil, fmt.Errorf("PDF konnte nicht gespeichert werden: %v", err)
 	}
