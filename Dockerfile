@@ -1,5 +1,5 @@
 # Multi-stage build für Go
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
@@ -34,3 +34,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 # Anwendung starten
 CMD ["./pdf-service"]
+ 
