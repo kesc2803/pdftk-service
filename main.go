@@ -106,7 +106,7 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 
 	// Schritt 2: PDF mit unidoc/unipdf öffnen
 	pdfReader := bytes.NewReader(pdfBytes)
-	pdfDoc, err := model.NewPdfDocumentFromReader(pdfReader)
+	pdfDoc, err := model.NewPdfDocument(pdfReader)
 	if err != nil {
 		return nil, fmt.Errorf("PDF konnte nicht geöffnet werden: %v", err)
 	}
@@ -137,9 +137,9 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 
 	// Signature Field zur AcroForm hinzufügen
 	if acroForm.Fields == nil {
-		acroForm.Fields = core.MakeArray()
+		acroForm.Fields = []*model.PdfField{}
 	}
-	acroForm.Fields.Append(signatureField.PdfField)
+	acroForm.Fields = append(acroForm.Fields, signatureField.PdfField)
 
 	// Schritt 5: PDF speichern
 	var buf bytes.Buffer
