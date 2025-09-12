@@ -7,8 +7,8 @@ WORKDIR /app
 # Go Module Dateien kopieren
 COPY go.mod ./
 
-# Dependencies herunterladen und go.sum generieren
-RUN go mod download && go mod tidy
+# Dependencies herunterladen und installieren
+RUN go mod download && go get github.com/gin-gonic/gin && go get github.com/unidoc/unipdf/v3
 
 # Source Code kopieren
 COPY main.go ./
