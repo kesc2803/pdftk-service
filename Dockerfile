@@ -1,37 +1,23 @@
-# Multi-stage build für Go
-FROM golang:1.23-alpine AS builder
+# Python 3.11 Base Image
+FROM python:3.11-slim
 
-# Arbeitsverzeichnis erstellen
+# Arbeitsverzeichnis setzen
 WORKDIR /app
 
-# Alle Dateien kopieren
-COPY . .
+# System-Pakete aktualisieren
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Dependencies herunterladen und installieren
-RUN go mod tidy && go mod download
+# Python Dependencies kopieren und installieren
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Go Binary kompilieren
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pdf-service .
-
-# Finales Image
-FROM alpine:latest
-
-# curl für Health Check installieren
-RUN apk --no-cache add curl
-
-# Arbeitsverzeichnis erstellen
-WORKDIR /root/
-
-# Kompiliertes Binary kopieren
-COPY --from=builder /app/pdf-service .
+# Application Code kopieren
+COPY app.py .
 
 # Port freigeben
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/api/health || exit 1
-
-# Anwendung starten
-CMD ["./pdf-service"]
- 
+# Service starten
+CMD ["python", "app.py"]
