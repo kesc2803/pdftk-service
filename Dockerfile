@@ -5,10 +5,10 @@ FROM golang:1.21-alpine AS builder
 WORKDIR /app
 
 # Go Module Dateien kopieren
-COPY go.mod go.sum ./
+COPY go.mod ./
 
-# Dependencies herunterladen
-RUN go mod download
+# Dependencies herunterladen und go.sum generieren
+RUN go mod download && go mod tidy
 
 # Source Code kopieren
 COPY main.go ./
