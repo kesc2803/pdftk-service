@@ -132,8 +132,8 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 
 	// Schritt 5: AcroForm erstellen
 	pdfForm := model.NewPdfAcroForm()
-	pdfForm.SetNeedAppearances(true)
-	c.SetForm(pdfForm)
+	pdfForm.NeedAppearances = core.MakeBool(true)
+	c.SetAcroForm(pdfForm)
 
 	// Schritt 6: Signature Field erstellen
 	sigField := model.NewPdfFieldSignature(nil)
@@ -144,10 +144,13 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 		core.MakeFloat(float64(req.SignatureX + req.SignatureWidth)),
 		core.MakeFloat(float64(req.SignatureY + req.SignatureHeight)),
 	)
-	sigField.Ff = model.FieldFlagRequired
+	sigField.Ff = core.MakeInteger(int64(model.FieldFlagRequired))
 
 	// Schritt 7: Signature Field dem Formular hinzufügen
-	pdfForm.AddField(sigField)
+	if pdfForm.Fields == nil {
+		pdfForm.Fields = &[]*model.PdfField{}
+	}
+	*pdfForm.Fields = append(*pdfForm.Fields, sigField.PdfField)
 
 	// Schritt 8: PDF speichern
 	var buf bytes.Buffer
