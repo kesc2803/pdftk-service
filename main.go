@@ -59,7 +59,7 @@ func main() {
 	r.GET("/api/check-unidoc", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "unidoc/unipdf v4 available",
-			"version": "v4.0.0",
+			"version": "v4.3.0",
 		})
 	})
 
@@ -106,7 +106,7 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 
 	// Schritt 2: PDF mit unidoc/unipdf öffnen
 	pdfReader := bytes.NewReader(pdfBytes)
-	pdfDoc, err := model.NewPdfDocumentFromReader(pdfReader)
+	pdfDoc, err := model.NewPdfDocument(pdfReader)
 	if err != nil {
 		return nil, fmt.Errorf("PDF konnte nicht geöffnet werden: %v", err)
 	}
