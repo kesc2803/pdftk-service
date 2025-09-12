@@ -12,7 +12,6 @@ import (
 	"github.com/unidoc/unipdf/v4/common/license"
 	"github.com/unidoc/unipdf/v4/model"
 	"github.com/unidoc/unipdf/v4/core"
-	"github.com/unidoc/unipdf/v4/creator"
 )
 
 type CreatePdfRequest struct {
@@ -112,11 +111,10 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 		return nil, fmt.Errorf("PDF konnte nicht geöffnet werden: %v", err)
 	}
 
-	// Schritt 3: Creator für neues PDF verwenden
-	c := creator.New()
-	c.SetPageSize(creator.PageSizeA4)
-
-	// Schritt 4: Seiten vom Reader zum Creator kopieren
+	// Schritt 3: Neues PDF-Dokument erstellen
+	doc := model.NewPdfDocument()
+	
+	// Schritt 4: Seiten vom Reader zum neuen Dokument kopieren
 	numPages, err := reader.GetNumPages()
 	if err != nil {
 		return nil, fmt.Errorf("Seitenanzahl konnte nicht ermittelt werden: %v", err)
@@ -127,34 +125,40 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Seite %d konnte nicht gelesen werden: %v", i, err)
 		}
-		c.AddPage(page)
+		err = doc.AddPage(page)
+		if err != nil {
+			return nil, fmt.Errorf("Seite %d konnte nicht hinzugefügt werden: %v", i, err)
+		}
 	}
 
 	// Schritt 5: AcroForm erstellen
-	pdfForm := model.NewPdfAcroForm()
-	pdfForm.NeedAppearances = core.MakeBool(true)
-	c.SetAcroForm(pdfForm)
+	acroForm := model.NewPdfAcroForm()
+	acroForm.NeedAppearances = core.MakeBool(true)
+	doc.SetAcroForm(acroForm)
 
 	// Schritt 6: Signature Field erstellen
-	sigField := model.NewPdfFieldSignature(nil)
-	sigField.T = core.MakeString("signature_" + req.CustomerName)
-	sigField.Rect = core.MakeArray(
+	signatureField := model.NewPdfFieldSignature(nil)
+	
+	// Position und Größe setzen
+	signatureField.Rect = core.MakeArray(
 		core.MakeFloat(float64(req.SignatureX)),
 		core.MakeFloat(float64(req.SignatureY)),
 		core.MakeFloat(float64(req.SignatureX + req.SignatureWidth)),
 		core.MakeFloat(float64(req.SignatureY + req.SignatureHeight)),
 	)
-	sigField.Ff = core.MakeInteger(int64(model.FieldFlagRequired))
 
-	// Schritt 7: Signature Field dem Formular hinzufügen
-	if pdfForm.Fields == nil {
-		pdfForm.Fields = &[]*model.PdfField{}
+	// Field Name setzen
+	signatureField.T = core.MakeString("signature_" + req.CustomerName)
+
+	// Signature Field zur AcroForm hinzufügen
+	if acroForm.Fields == nil {
+		acroForm.Fields = &[]*model.PdfField{}
 	}
-	*pdfForm.Fields = append(*pdfForm.Fields, sigField.PdfField)
+	*acroForm.Fields = append(*acroForm.Fields, signatureField.PdfField)
 
-	// Schritt 8: PDF speichern
+	// Schritt 7: PDF speichern
 	var buf bytes.Buffer
-	err = c.Write(&buf)
+	err = doc.Write(&buf)
 	if err != nil {
 		return nil, fmt.Errorf("PDF konnte nicht gespeichert werden: %v", err)
 	}
