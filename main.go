@@ -143,7 +143,7 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 
 	// Schritt 5: PDF speichern
 	var buf bytes.Buffer
-	_, err = pdfDoc.WriteTo(err = pdfDoc.WriteTo(&buf)buf)
+	_, err = pdfDoc.WriteTo(&buf)
 	if err != nil {
 		return nil, fmt.Errorf("PDF konnte nicht gespeichert werden: %v", err)
 	}
