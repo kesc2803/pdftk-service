@@ -1,4 +1,4 @@
-Das mache ichfrom flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file
 import requests
 import io
 import os
