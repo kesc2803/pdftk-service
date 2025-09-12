@@ -4,14 +4,11 @@ FROM golang:1.21-alpine AS builder
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
 
-# Go Module Dateien kopieren
-COPY go.mod ./
+# Alle Dateien kopieren
+COPY . .
 
 # Dependencies herunterladen und installieren
-RUN go mod download && go get github.com/gin-gonic/gin && go get github.com/unidoc/unipdf/v3
-
-# Source Code kopieren
-COPY main.go ./
+RUN go mod tidy && go mod download
 
 # Go Binary kompilieren
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pdf-service .
