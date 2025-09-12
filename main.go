@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/unidoc/unipdf/v3/common/license"
 	"github.com/unidoc/unipdf/v3/model"
+	"github.com/unidoc/unipdf/v3/core"
 )
 
 type CreatePdfRequest struct {
@@ -121,22 +122,22 @@ func createPdfWithSignatureField(req CreatePdfRequest) ([]byte, error) {
 	}
 
 	// Schritt 4: Signature Field erstellen
-	signatureField := model.NewPdfFieldSignature()
+	signatureField := model.NewPdfFieldSignature(nil)
 	
 	// Position und Größe setzen
-	signatureField.Rect = model.PdfRectangle{
-		Llx: float64(req.SignatureX),
-		Lly: float64(req.SignatureY),
-		Urx: float64(req.SignatureX + req.SignatureWidth),
-		Ury: float64(req.SignatureY + req.SignatureHeight),
-	}
+	signatureField.Rect = core.MakeArray(
+		core.MakeFloat(float64(req.SignatureX)),
+		core.MakeFloat(float64(req.SignatureY)),
+		core.MakeFloat(float64(req.SignatureX + req.SignatureWidth)),
+		core.MakeFloat(float64(req.SignatureY + req.SignatureHeight)),
+	)
 
 	// Field Name setzen
-	signatureField.T = model.NewPdfObjectString("signature_" + req.CustomerName)
+	signatureField.T = core.MakeString("signature_" + req.CustomerName)
 
 	// Signature Field zur AcroForm hinzufügen
 	if acroForm.Fields == nil {
-		acroForm.Fields = model.NewPdfArray()
+		acroForm.Fields = core.MakeArray()
 	}
 	acroForm.Fields.Append(signatureField.PdfField)
 
