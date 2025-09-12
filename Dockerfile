@@ -1,48 +1,39 @@
-FROM openjdk:17-jdk-slim
-
-# System Dependencies installieren
-RUN apt-get update && apt-get install -y \
-    curl \
-    maven \
-    && rm -rf /var/lib/apt/lists/*
+# Multi-stage build für Go
+FROM golang:1.21-alpine AS builder
 
 # Arbeitsverzeichnis erstellen
 WORKDIR /app
 
-# Alle Dateien kopieren
-COPY . .
+# Go Module Dateien kopieren
+COPY go.mod go.sum ./
 
-# Debug: Was wurde kopiert?
-RUN echo "=== Alle kopierten Dateien ===" && \
-    ls -la && \
-    echo "=== src Directory ===" && \
-    ls -la src/ || echo "src Directory nicht gefunden" && \
-    echo "=== Maven Source Directory ===" && \
-    ls -la src/main/java/com/pdfservice/ || echo "Maven Source Directory nicht gefunden"
+# Dependencies herunterladen
+RUN go mod download
 
-# Maven Build mit Debug
-RUN echo "=== Maven Build ===" && \
-    mvn clean compile package -DskipTests -X
+# Source Code kopieren
+COPY main.go ./
 
-# Debug: Was wurde kompiliert?
-RUN echo "=== target/classes ===" && \
-    ls -la target/classes/ || echo "target/classes nicht gefunden" && \
-    echo "=== target/classes/com/pdfservice ===" && \
-    ls -la target/classes/com/pdfservice/ || echo "target/classes/com/pdfservice nicht gefunden"
+# Go Binary kompilieren
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pdf-service .
 
-# Debug: JAR Inhalt überprüfen
-RUN echo "=== JAR Inhalt ===" && \
-    ls -la target/ && \
-    jar -tf target/pdf-service-1.0.0.jar | head -20 && \
-    echo "=== BOOT-INF/classes ===" && \
-    jar -tf target/pdf-service-1.0.0.jar | grep "BOOT-INF/classes" | head -10 || echo "Keine BOOT-INF/classes gefunden"
+# Finales Image
+FROM alpine:latest
+
+# curl für Health Check installieren
+RUN apk --no-cache add curl
+
+# Arbeitsverzeichnis erstellen
+WORKDIR /root/
+
+# Kompiliertes Binary kopieren
+COPY --from=builder /app/pdf-service .
 
 # Port freigeben
 EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+  CMD curl -f http://localhost:8080/api/health || exit 1
 
-# Anwendung starten (mit expliziter Main Class)
-CMD ["java", "-cp", "target/pdf-service-1.0.0.jar", "com.pdfservice.PdfServiceApplication"]
+# Anwendung starten
+CMD ["./pdf-service"]
