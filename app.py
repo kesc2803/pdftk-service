@@ -110,16 +110,10 @@ def convert_html_to_pdf(html):
 
 def create_simple_pdf_fallback(html):
     """Erstellt ein einfaches PDF als letzter Fallback"""
-    try:
-        # Versuche weasyprint zu verwenden
-        import weasyprint
-        pdf_bytes = weasyprint.HTML(string=html).write_pdf()
-        print("Used WeasyPrint for PDF generation")
-        return pdf_bytes
-    except ImportError:
-        # Wenn weasyprint nicht verfügbar ist, erstelle ein minimales PDF
-        print("WeasyPrint not available, creating minimal PDF")
-        return create_minimal_pdf(html)
+    # WeasyPrint braucht System-Bibliotheken, die im Docker Container fehlen
+    # Verwende stattdessen ReportLab direkt
+    print("Using ReportLab for PDF generation")
+    return create_minimal_pdf(html)
 
 def create_minimal_pdf(html):
     """Erstellt ein minimales PDF ohne externe Abhängigkeiten"""
