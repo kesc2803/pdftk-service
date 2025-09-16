@@ -146,7 +146,7 @@ def create_minimal_pdf(html):
     return buffer.getvalue()
 
 def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
-    """Fügt ein AcroForm Signature Field zum PDF hinzu mit pyHanko"""
+    """Fügt ein echtes AcroForm Signature Field zum PDF hinzu mit pyHanko"""
     try:
         # PDF mit pyHanko lesen
         pdf_reader = PdfFileReader(io.BytesIO(pdf_bytes))
@@ -156,22 +156,33 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
         for page_num in range(len(pdf_reader.pages)):
             pdf_writer.add_page(pdf_reader.pages[page_num])
         
-        # Signature Field hinzufügen mit pyHanko (korrekte API)
+        # Echtes AcroForm Signature Field erstellen
         from pyhanko.sign import fields
         from pyhanko.pdf_utils import Rectangle
+        from pyhanko.pdf_utils.generic import pdf_name
         
-        # Erstelle das Signature Field mit korrekter pyHanko API
+        # Erstelle ein echtes AcroForm Signature Field
         sig_field = fields.SignatureField(
             field_name=f'signature_{customer_name}',
-            field_rect=Rectangle(x, y, x + width, y + height)
+            field_rect=Rectangle(x, y, x + width, y + height),
+            # Wichtig: Stelle sicher, dass es ein echtes AcroForm Field ist
+            field_flags=fields.FieldFlag.PRINT | fields.FieldFlag.READ_ONLY,
+            field_value=None  # Leeres Field für Unterschrift
         )
         
         # Field zur ersten Seite hinzufügen
         pdf_writer.add_signature_field(sig_field, page_num=0)
         
+        # AcroForm aktivieren (wichtig für echte Signature Fields)
+        acro_form = pdf_writer.get_acro_form()
+        if acro_form:
+            acro_form[pdf_name('/SigFlags')] = 3  # SignaturesExist | AppendOnly
+        
         # PDF schreiben
         output = io.BytesIO()
         pdf_writer.write(output)
+        
+        print(f"Successfully added AcroForm signature field: signature_{customer_name}")
         return output.getvalue()
         
     except Exception as e:
