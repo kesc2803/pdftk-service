@@ -2,7 +2,8 @@ from flask import Flask, request, jsonify, send_file
 import requests
 import io
 import os
-from pyhanko import PdfFileReader, PdfFileWriter
+from pyhanko.pdf_utils.reader import PdfFileReader
+from pyhanko.pdf_utils.writer import PdfFileWriter
 
 app = Flask(__name__)
 
@@ -85,16 +86,21 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
         pdf_writer = PdfFileWriter()
         
         # Alle Seiten kopieren
-        for page in pdf_reader.pages:
-            pdf_writer.add_page(page)
+        for page_num in range(len(pdf_reader.pages)):
+            pdf_writer.add_page(pdf_reader.pages[page_num])
         
-        # Signature Field hinzufügen (einfache pyHanko API)
-        pdf_writer.add_signature_field(
+        # Signature Field hinzufügen mit pyHanko
+        from pyhanko.sign import fields
+        
+        sig_field = fields.SignatureField(
             name=f'signature_{customer_name}',
             field_name=f'signature_{customer_name}',
             field_rect=(x, y, x + width, y + height),
-            page_num=0
+            field_value=None
         )
+        
+        # Field zur ersten Seite hinzufügen
+        pdf_writer.add_signature_field(sig_field, page_num=0)
         
         # PDF schreiben
         output = io.BytesIO()
