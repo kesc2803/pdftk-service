@@ -162,14 +162,14 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
         for page_num in range(len(pdf_reader.pages)):
             pdf_writer.add_page(pdf_reader.pages[page_num])
         
-        # Signature Field hinzufügen mit pyHanko
+        # Signature Field hinzufügen mit pyHanko (korrekte API)
         from pyhanko.sign import fields
+        from pyhanko.pdf_utils import Rectangle
         
+        # Erstelle das Signature Field mit korrekter pyHanko API
         sig_field = fields.SignatureField(
-            name=f'signature_{customer_name}',
             field_name=f'signature_{customer_name}',
-            field_rect=(x, y, x + width, y + height),
-            field_value=None
+            field_rect=Rectangle(x, y, x + width, y + height)
         )
         
         # Field zur ersten Seite hinzufügen
@@ -188,10 +188,4 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
 if __name__ == '__main__':
     port = os.getenv('PORT', '8080')
     print(f"PDF Service starting on port {port}")
-    # Verwende einen Production WSGI Server für Render.com
-    try:
-        import gunicorn.app.wsgiapp as wsgi
-        wsgi.run()
-    except ImportError:
-        # Fallback zu Flask development server
-        app.run(host='0.0.0.0', port=int(port), debug=False)
+    app.run(host='0.0.0.0', port=int(port), debug=False)
