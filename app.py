@@ -88,26 +88,42 @@ def create_minimal_pdf(html):
 def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
     """Fügt ein echtes AcroForm Signature Field zum PDF hinzu mit pyHanko"""
     try:
+        print(f"Attempting to add signature field for: {customer_name}")
+        
         # PDF mit pyHanko lesen
         pdf_reader = PdfFileReader(io.BytesIO(pdf_bytes))
         pdf_writer = PdfFileWriter()
         
+        # Debug: pyHanko Version und API prüfen
+        print(f"PdfFileReader attributes: {dir(pdf_reader)}")
+        
         # Alle Seiten kopieren (pyHanko API - verschiedene Versionen)
         try:
             # Neue pyHanko API (v0.20+)
+            print("Trying new pyHanko API (num_pages)")
             for page_num in range(pdf_reader.num_pages):
                 page = pdf_reader.get_page(page_num)
                 pdf_writer.add_page(page)
-        except AttributeError:
-            # Alte pyHanko API (v0.19-)
-            for page_num in range(len(pdf_reader.pages)):
-                page = pdf_reader.pages[page_num]
-                pdf_writer.add_page(page)
+            print("Successfully used new pyHanko API")
+        except AttributeError as e:
+            print(f"New API failed: {e}")
+            try:
+                # Alte pyHanko API (v0.19-)
+                print("Trying old pyHanko API (pages)")
+                for page_num in range(len(pdf_reader.pages)):
+                    page = pdf_reader.pages[page_num]
+                    pdf_writer.add_page(page)
+                print("Successfully used old pyHanko API")
+            except Exception as e2:
+                print(f"Old API also failed: {e2}")
+                raise e2
         
         # Echtes AcroForm Signature Field erstellen
         from pyhanko.sign import fields
         from pyhanko.pdf_utils import Rectangle
         from pyhanko.pdf_utils.generic import pdf_name
+        
+        print("Creating signature field...")
         
         # Erstelle ein echtes AcroForm Signature Field
         sig_field = fields.SignatureField(
@@ -136,6 +152,9 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
     except Exception as e:
         # Fallback: PDF ohne Signature Field zurückgeben
         print(f"Warning: Could not add signature field with pyHanko: {e}")
+        print(f"Exception type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return pdf_bytes
 
 # WSGI Application für Gunicorn
