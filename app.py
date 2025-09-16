@@ -92,10 +92,17 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
         pdf_reader = PdfFileReader(io.BytesIO(pdf_bytes))
         pdf_writer = PdfFileWriter()
         
-        # Alle Seiten kopieren (korrekte pyHanko API)
-        for page_num in range(pdf_reader.num_pages):
-            page = pdf_reader.get_page(page_num)
-            pdf_writer.add_page(page)
+        # Alle Seiten kopieren (pyHanko API - verschiedene Versionen)
+        try:
+            # Neue pyHanko API (v0.20+)
+            for page_num in range(pdf_reader.num_pages):
+                page = pdf_reader.get_page(page_num)
+                pdf_writer.add_page(page)
+        except AttributeError:
+            # Alte pyHanko API (v0.19-)
+            for page_num in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_num]
+                pdf_writer.add_page(page)
         
         # Echtes AcroForm Signature Field erstellen
         from pyhanko.sign import fields
