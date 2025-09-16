@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_file
 import requests
 import io
 import os
-from PyPDF2 import PdfReader, PdfWriter
+from pyhanko import PdfFileReader, PdfFileWriter
 
 app = Flask(__name__)
 
@@ -78,19 +78,23 @@ def convert_html_to_pdf(html):
     return response.content
 
 def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
-    """Fügt ein AcroForm Signature Field zum PDF hinzu mit PyPDF2"""
+    """Fügt ein AcroForm Signature Field zum PDF hinzu mit pyHanko"""
     try:
-        # PDF mit PyPDF2 lesen
-        pdf_reader = PdfReader(io.BytesIO(pdf_bytes))
-        pdf_writer = PdfWriter()
+        # PDF mit pyHanko lesen
+        pdf_reader = PdfFileReader(io.BytesIO(pdf_bytes))
+        pdf_writer = PdfFileWriter()
         
         # Alle Seiten kopieren
         for page in pdf_reader.pages:
             pdf_writer.add_page(page)
         
-        # Signature Field erstellen (vereinfachte Implementierung)
-        # Für jetzt geben wir das PDF ohne Signature Field zurück
-        # TODO: Implementiere echte Signature Fields mit PyPDF2
+        # Signature Field hinzufügen (einfache pyHanko API)
+        pdf_writer.add_signature_field(
+            name=f'signature_{customer_name}',
+            field_name=f'signature_{customer_name}',
+            field_rect=(x, y, x + width, y + height),
+            page_num=0
+        )
         
         # PDF schreiben
         output = io.BytesIO()
@@ -99,7 +103,7 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
         
     except Exception as e:
         # Fallback: PDF ohne Signature Field zurückgeben
-        print(f"Warning: Could not add signature field: {e}")
+        print(f"Warning: Could not add signature field with pyHanko: {e}")
         return pdf_bytes
 
 if __name__ == '__main__':
