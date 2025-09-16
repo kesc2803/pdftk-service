@@ -114,9 +114,17 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
                     page = pdf_reader.pages[page_num]
                     pdf_writer.add_page(page)
                 print("Successfully used old pyHanko API")
-            except Exception as e2:
+            except AttributeError as e2:
                 print(f"Old API also failed: {e2}")
-                raise e2
+                # Dritte Option: Direkte Seiteniteration
+                try:
+                    print("Trying direct page iteration")
+                    for page in pdf_reader:
+                        pdf_writer.add_page(page)
+                    print("Successfully used direct iteration")
+                except Exception as e3:
+                    print(f"Direct iteration also failed: {e3}")
+                    raise e3
         
         # Echtes AcroForm Signature Field erstellen
         from pyhanko.sign import fields
