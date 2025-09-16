@@ -46,66 +46,8 @@ def create_pdf():
         return jsonify({"error": str(e)}), 500
 
 def convert_html_to_pdf(html):
-    """Konvertiert HTML zu PDF über externen Service mit Fallback"""
-    # Versuche zuerst den ursprünglichen Service
-    try:
-        service_url = "https://html2pdf-q4n2.onrender.com/generate"
-        api_key = os.getenv("PDF_API_KEY")
-        
-        if api_key:
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
-            }
-            
-            payload = {
-                "html": html,
-                "options": {
-                    "format": "A4",
-                    "margin": {
-                        "top": "1cm",
-                        "right": "1cm",
-                        "bottom": "1cm",
-                        "left": "1cm"
-                    }
-                }
-            }
-            
-            response = requests.post(service_url, json=payload, headers=headers, timeout=30)
-            
-            if response.status_code == 200:
-                return response.content
-            else:
-                print(f"Primary service failed: {response.status_code} - {response.text}")
-        else:
-            print("No API key provided for primary service")
-            
-    except Exception as e:
-        print(f"Primary service error: {e}")
-    
-    # Fallback: Verwende einen anderen HTML2PDF Service
-    try:
-        print("Trying fallback HTML2PDF service...")
-        fallback_url = "https://api.html-pdf-node.com/convert"
-        fallback_payload = {
-            "html": html,
-            "format": "A4",
-            "margin": "1cm"
-        }
-        
-        response = requests.post(fallback_url, json=fallback_payload, timeout=30)
-        
-        if response.status_code == 200:
-            print("Fallback service successful")
-            return response.content
-        else:
-            print(f"Fallback service failed: {response.status_code}")
-            
-    except Exception as e:
-        print(f"Fallback service error: {e}")
-    
-    # Letzter Fallback: Erstelle ein einfaches PDF
-    print("Using simple PDF fallback")
+    """Konvertiert HTML zu PDF mit ReportLab (direkt)"""
+    print("Using ReportLab for PDF generation")
     return create_simple_pdf_fallback(html)
 
 def create_simple_pdf_fallback(html):
