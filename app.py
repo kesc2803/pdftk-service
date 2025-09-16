@@ -179,6 +179,9 @@ def add_signature_field(pdf_bytes, customer_name, x, y, width, height):
         print(f"Warning: Could not add signature field with pyHanko: {e}")
         return pdf_bytes
 
+# WSGI Application für Gunicorn
+application = app
+
 if __name__ == '__main__':
     port = os.getenv('PORT', '8080')
     print(f"PDF Service starting on port {port}")
