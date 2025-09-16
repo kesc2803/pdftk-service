@@ -52,8 +52,6 @@ def convert_html_to_pdf(html):
 
 def create_simple_pdf_fallback(html):
     """Erstellt ein einfaches PDF als letzter Fallback"""
-    # WeasyPrint braucht System-Bibliotheken, die im Docker Container fehlen
-    # Verwende stattdessen ReportLab direkt
     print("Using ReportLab for PDF generation")
     return create_minimal_pdf(html)
 
